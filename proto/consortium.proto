@@ -1,0 +1,175 @@
+// Consortium Protocol Buffer Definitions
+// Version: 1.0
+//
+// This file defines the message schemas for the Consortium distributed
+// inference protocol, including node registration, work orders, receipts,
+// and audit messages.
+
+syntax = "proto3";
+
+package consortium.v1;
+
+// ============ Common Types ============
+
+message Empty {}
+
+// ============ Node Registration ============
+
+message NodeInfo {
+    string node_id = 1;                     // 16-char hex ID derived from public key
+    string address = 2;                     // "host:port"
+    string hardware_desc = 3;               // "cuda:rtx4070" or "metal:m4"
+    repeated string capabilities = 4;       // ["compute", "verify"]
+    uint64 available_memory_mb = 5;
+}
+
+message RegisterNodeRequest {
+    NodeInfo node = 1;
+    bytes public_key = 2;                   // 32-byte Ed25519 public key
+}
+
+message RegisterNodeResponse {
+    bool accepted = 1;
+    string error = 2;
+    uint64 heartbeat_interval_ms = 3;       // How often to send heartbeats
+}
+
+message HeartbeatRequest {
+    string node_id = 1;
+    uint64 timestamp_ms = 2;
+    float load_factor = 3;                  // 0.0-1.0 current utilization
+}
+
+message HeartbeatResponse {
+    bool acknowledged = 1;
+}
+
+// ============ Session Management ============
+
+message SessionConfig {
+    string model_id = 1;                    // "llama3-8b-q4_k_m"
+    uint64 rng_seed = 2;                    // Deterministic sampling seed
+    float audit_probability = 3;            // 0.0-1.0
+    uint32 max_tokens = 4;
+    float temperature = 5;                  // 0.0 for greedy
+    uint32 top_k = 6;                       // 1 for greedy
+}
+
+message StagePlacement {
+    uint32 stage_id = 1;
+    string node_id = 2;
+    uint32 layer_start = 3;                 // Inclusive
+    uint32 layer_end = 4;                   // Exclusive
+}
+
+message CreateSessionRequest {
+    SessionConfig config = 1;
+    repeated StagePlacement placements = 2;
+    string prompt = 3;
+}
+
+message CreateSessionResponse {
+    string session_id = 1;
+    bool success = 2;
+    string error = 3;
+}
+
+// ============ Work Orders ============
+
+message WorkOrder {
+    string session_id = 1;
+    string order_id = 2;                    // UUID for this specific work unit
+    uint32 token_index = 3;
+    uint32 stage_id = 4;
+    bytes input_activation = 5;             // Serialized tensor (empty for stage 0 prompt)
+    repeated uint32 input_token_ids = 6;    // For stage 0 initial encoding
+    uint64 deadline_ms = 7;                 // Absolute timestamp
+}
+
+message WorkResult {
+    string order_id = 1;
+    bytes output_activation = 2;            // Serialized tensor
+    bytes commitment = 3;                   // 32-byte SHA-256 hash
+    uint64 compute_time_us = 4;
+    bool success = 5;
+    string error = 6;
+}
+
+// ============ Receipts ============
+
+message Receipt {
+    string session_id = 1;
+    string order_id = 2;
+    string node_id = 3;
+    uint32 token_index = 4;
+    uint32 stage_id = 5;
+    bytes commitment = 6;                   // 32-byte output commitment
+    bytes input_hash = 7;                   // 32-byte hash of input activation
+    uint64 timestamp_ms = 8;
+    bytes signature = 9;                    // 64-byte Ed25519 signature
+    bytes signer_public_key = 10;           // 32-byte public key of signer
+}
+
+// ============ Audits ============
+
+message AuditOrder {
+    string session_id = 1;
+    string audit_id = 2;
+    string target_order_id = 3;             // WorkOrder being audited
+    uint32 stage_id = 4;                    // Stage to recompute
+    string verifier_node_id = 5;
+    bytes input_activation = 6;             // Input to recompute
+    bytes expected_commitment = 7;          // Expected output commitment
+}
+
+message AuditResult {
+    string audit_id = 1;
+    bool passed = 2;
+    bytes computed_commitment = 3;          // Actual commitment from recomputation
+    string failure_reason = 4;              // If passed=false
+    uint64 verify_time_us = 5;
+}
+
+// ============ Failure Handling ============
+
+message NodeFailure {
+    string failed_node_id = 1;
+    uint32 failed_stage_id = 2;
+    string last_successful_order_id = 3;
+    uint64 detected_at_ms = 4;
+}
+
+message FailoverOrder {
+    string session_id = 1;
+    string backup_node_id = 2;
+    uint32 stage_id = 3;
+    uint32 layer_start = 4;
+    uint32 layer_end = 5;
+    bytes last_input_activation = 6;        // Resume from here
+    uint32 resume_token_index = 7;
+}
+
+// ============ Service Definitions ============
+
+service CoordinatorService {
+    // Node management
+    rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse);
+    rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+
+    // Session management
+    rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+
+    // Result submission
+    rpc SubmitWorkResult(WorkResult) returns (Receipt);
+    rpc SubmitAuditResult(AuditResult) returns (Empty);
+}
+
+service WorkerService {
+    // Work execution
+    rpc ExecuteWork(WorkOrder) returns (WorkResult);
+    rpc ExecuteAudit(AuditOrder) returns (AuditResult);
+    rpc AcceptFailover(FailoverOrder) returns (WorkResult);
+
+    // Status
+    rpc GetStatus(Empty) returns (NodeInfo);
+}

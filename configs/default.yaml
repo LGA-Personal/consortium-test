@@ -1,0 +1,43 @@
+# Consortium Default Configuration
+# This file contains the default settings for the distributed inference system.
+
+model:
+  model_id: "llama3-8b-q4_k_m"
+  model_path: null  # Set to path of GGUF file
+  total_layers: 32
+  hidden_dim: 4096
+  vocab_size: 128256
+
+sampling:
+  temperature: 0.0  # Greedy sampling
+  top_k: 1
+  top_p: 1.0
+  seed: 42
+  max_tokens: 64
+
+verification:
+  audit_probability: 0.2  # 20% audit rate
+  grid_factor: 64
+  clamp_min: -100.0
+  clamp_max: 100.0
+
+network:
+  host: "0.0.0.0"
+  port: 50051
+  coordinator_address: null  # Set for workers
+  heartbeat_interval_ms: 5000
+  stage_timeout_ms: 30000
+  connect_timeout_ms: 10000
+
+node:
+  node_id: ""  # Derived from keys if empty
+  capabilities:
+    - compute
+    - verify
+  hardware_desc: "unknown"
+  layers: null  # e.g., "0-11"
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  log_dir: "logs"

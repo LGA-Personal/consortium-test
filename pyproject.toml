@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "consortium"
+version = "0.1.0"
+description = "Heterogeneous Distributed Inference with Fuzzy Verification"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "Consortium Team" }
+]
+
+dependencies = [
+    # Core
+    "numpy>=1.24",
+    "torch>=2.0",
+
+    # Model loading
+    "llama-cpp-python>=0.2.90",
+    "transformers>=4.40",
+    "huggingface-hub",
+
+    # Networking
+    "grpcio>=1.60",
+    "grpcio-tools>=1.60",
+    "protobuf>=4.0",
+
+    # Identity/Crypto
+    "cryptography>=42.0",
+
+    # Config
+    "pyyaml",
+    "pydantic>=2.0",
+
+    # CLI
+    "click>=8.0",
+    "rich",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio",
+    "pytest-timeout",
+    "mypy",
+    "ruff",
+]
+
+[project.scripts]
+consortium = "consortium.cli.main:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/consortium"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
