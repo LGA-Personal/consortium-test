@@ -16,7 +16,7 @@ async def check_reachability(
     """Check if a node is reachable at the given IP and verify its identity."""
 
     def _fetch_remote_node_id() -> NodeId | None:
-        connection = http.client.HTTPConnection(target_ip, 52415, timeout=1)
+        connection = http.client.HTTPConnection(target_ip, 52415, timeout=5)
         try:
             connection.request("GET", "/node_id")
             response = connection.getresponse()
