@@ -123,14 +123,21 @@ class API:
         self._setup_cors()
         self._setup_routes()
 
-        self.app.mount(
-            "/",
-            StaticFiles(
-                directory=find_dashboard(),
-                html=True,
-            ),
-            name="dashboard",
-        )
+        try:
+            dashboard_path = find_dashboard()
+            self.app.mount(
+                "/",
+                StaticFiles(
+                    directory=dashboard_path,
+                    html=True,
+                ),
+                name="dashboard",
+            )
+        except FileNotFoundError:
+            logger.warning(
+                "Dashboard assets not found - API will run without the web UI. "
+                "Build the dashboard or set DASHBOARD_DIR to enable the web UI."
+            )
 
         self._chat_completion_queues: dict[CommandId, Sender[TokenChunk]] = {}
         self._tg: TaskGroup | None = None
