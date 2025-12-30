@@ -196,8 +196,8 @@ On **Machine B**:
 cd ~/Projects/consortium-test
 source .venv/bin/activate
 
-# Start as worker (no --force-master)
-consortium -v
+# Start as worker without API (prevents dashboard missing error)
+consortium --no-api -v
 ```
 
 Expected output:
@@ -207,6 +207,9 @@ INFO     Starting EXO
 INFO     Starting node 12D3KooW...  (different ID than Machine A)
 INFO     Node 12D3KooW... elected master  (shows Machine A's ID)
 ```
+
+> [!NOTE]
+> We use `--no-api` on the worker because the dashboard assets need to be built for the API to start. Since the worker doesn't need to serve the UI, this is safer and simpler.
 
 ### Step 3: Verify Peer Discovery
 
