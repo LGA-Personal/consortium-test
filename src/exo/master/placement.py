@@ -67,6 +67,9 @@ def place_instance(
     logger.warning("Bypassing memory check as requested by user.")
     cycles_with_sufficient_memory = candidate_cycles
 
+    if not cycles_with_sufficient_memory:
+        raise ValueError("No cycles found (Topology is incomplete - nodes cannot see each other)")
+
     smallest_cycles = get_smallest_cycles(cycles_with_sufficient_memory)
 
     smallest_tb_cycles = [
