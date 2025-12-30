@@ -4,8 +4,8 @@ Tests for the in-process pipeline execution.
 
 import pytest
 
-from consortium.core.pipeline import InProcessPipeline, PipelineResult
-from consortium.core.session import (
+from exo.consortium.core.pipeline import InProcessPipeline, PipelineResult
+from exo.consortium.core.session import (
     SessionConfig,
     SessionStatus,
     StagePlacement,

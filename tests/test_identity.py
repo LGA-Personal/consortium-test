@@ -5,8 +5,8 @@ Tests for node identity and receipt signing.
 import pytest
 import time
 
-from consortium.identity.keys import KeyManager
-from consortium.identity.signing import (
+from exo.consortium.identity.keys import KeyManager
+from exo.consortium.identity.signing import (
     ReceiptData,
     ReceiptSigner,
     SignedReceipt,

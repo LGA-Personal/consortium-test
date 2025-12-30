@@ -130,6 +130,27 @@ message AuditResult {
     uint64 verify_time_us = 5;
 }
 
+// ============ Layer Commitments (EXO Integration) ============
+
+message LayerCommitment {
+    uint32 layer_idx = 1;                   // Global layer index (0 to n_layers-1)
+    bytes commitment = 2;                   // 32-byte SHA-256 hash
+}
+
+message SubmitLayerCommitmentsRequest {
+    string session_id = 1;
+    string command_id = 2;                  // EXO command ID
+    uint32 token_index = 3;
+    uint32 device_rank = 4;
+    repeated LayerCommitment commitments = 5;
+    uint64 timestamp_ms = 6;
+}
+
+message SubmitLayerCommitmentsResponse {
+    bool acknowledged = 1;
+    string error = 2;
+}
+
 // ============ Failure Handling ============
 
 message NodeFailure {
@@ -162,6 +183,9 @@ service CoordinatorService {
     // Result submission
     rpc SubmitWorkResult(WorkResult) returns (Receipt);
     rpc SubmitAuditResult(AuditResult) returns (Empty);
+
+    // Layer commitments from EXO integration
+    rpc SubmitLayerCommitments(SubmitLayerCommitmentsRequest) returns (SubmitLayerCommitmentsResponse);
 }
 
 service WorkerService {

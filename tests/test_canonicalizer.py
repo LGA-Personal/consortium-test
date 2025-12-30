@@ -12,7 +12,7 @@ These tests validate that:
 import numpy as np
 import pytest
 
-from consortium.verification.canonicalizer import (
+from exo.consortium.verification.canonicalizer import (
     CanonicalConfig,
     canonicalize,
     canonicalize_and_hash,

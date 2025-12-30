@@ -5,7 +5,7 @@ Tests for activation tensor serialization.
 import numpy as np
 import pytest
 
-from consortium.transport.serialization import (
+from exo.consortium.transport.serialization import (
     serialize_activation,
     deserialize_activation,
     get_activation_size,

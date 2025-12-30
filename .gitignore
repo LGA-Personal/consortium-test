@@ -28,6 +28,7 @@ wheels/
 # IDE
 .idea/
 .vscode/
+.zed/
 *.swp
 *.swo
 *~
@@ -44,11 +45,13 @@ coverage.xml
 # Type checking
 .mypy_cache/
 .ruff_cache/
+.mlx_typings/
 
 # Models (large files)
 models/*.gguf
 models/*.bin
 models/*.safetensors
+models/*/
 
 # Logs
 logs/*.log
@@ -57,6 +60,7 @@ logs/*.log
 # Environment variables
 .env
 .env.local
+.envrc
 
 # Keys (security)
 *.pem
@@ -84,3 +88,14 @@ tmp/
 
 # Claude
 .claude/
+
+# Rust / Cargo
+target/
+Cargo.lock
+
+# Dashboard build (generated)
+dashboard/build/
+
+# UV lock (optional - some prefer to commit this)
+# uv.lock
+

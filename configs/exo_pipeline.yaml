@@ -1,0 +1,91 @@
+# Consortium + EXO Pipeline Configuration
+#
+# This configuration file defines settings for distributed inference
+# using EXO's pipeline parallelism with consortium verification.
+
+# Model configuration
+model:
+  # Model ID (must be available via mlx-lm)
+  # Examples:
+  #   - mlx-community/Llama-3-8B-Instruct-4bit
+  #   - mlx-community/Qwen2.5-7B-Instruct-4bit
+  id: mlx-community/Llama-3-8B-Instruct-4bit
+
+  # Total number of transformer layers
+  n_layers: 32
+
+  # Hidden dimension size
+  hidden_dim: 4096
+
+# Pipeline configuration
+pipeline:
+  # Number of stages (devices) in the pipeline
+  stages: 3
+
+  # Layer splits define where to divide layers between stages
+  # [11, 22] means: Stage 0 = layers 0-10, Stage 1 = layers 11-21, Stage 2 = layers 22-31
+  layer_splits: [11, 22]
+
+  # Backend for MLX distributed communication
+  # Options: "ring" (TCP), "jaccl" (RDMA for compatible hardware)
+  backend: ring
+
+# Verification settings
+verification:
+  # Enable/disable verification entirely
+  enabled: true
+
+  # Verify every N-th layer
+  # 1 = verify all layers (highest security, ~10% overhead)
+  # 2 = verify every 2nd layer (~5% overhead)
+  # 4 = verify every 4th layer (~3% overhead)
+  interval: 1
+
+  # Canonicalization grid factor (64 = 1/64 precision)
+  grid_factor: 64
+
+  # Value clamp range for canonicalization
+  clamp_min: -100.0
+  clamp_max: 100.0
+
+# Audit settings
+audit:
+  # Probability of auditing each layer commitment (0.0 to 1.0)
+  # 0.2 = audit ~20% of layers
+  probability: 0.2
+
+  # Timeout for audit verification (ms)
+  timeout_ms: 30000
+
+# Generation settings
+generation:
+  # Maximum tokens to generate
+  max_tokens: 256
+
+  # Temperature for sampling (0.0 = greedy)
+  temperature: 0.7
+
+  # Top-k sampling (1 = greedy)
+  top_k: 40
+
+  # Random seed for reproducibility
+  rng_seed: 42
+
+# EXO connection settings
+exo:
+  # EXO API endpoint
+  api_url: http://localhost:52415
+
+  # Connection timeout (ms)
+  timeout_ms: 30000
+
+# Coordinator settings
+coordinator:
+  # gRPC address for consortium coordinator
+  address: localhost:50051
+
+  # Heartbeat interval (ms)
+  heartbeat_interval_ms: 5000
+
+  # Node timeout (ms) - mark node unhealthy after this
+  node_timeout_ms: 15000
