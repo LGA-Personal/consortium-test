@@ -59,11 +59,13 @@ def place_instance(
     candidate_cycles = list(
         filter(lambda it: len(it) >= command.min_nodes, cycles + singleton_cycles)
     )
-    cycles_with_sufficient_memory = filter_cycles_by_memory(
-        candidate_cycles, command.model_meta.storage_size
-    )
-    if not cycles_with_sufficient_memory:
-        raise ValueError("No cycles found with sufficient memory")
+    # cycles_with_sufficient_memory = filter_cycles_by_memory(
+    #     candidate_cycles, command.model_meta.storage_size
+    # )
+    # if not cycles_with_sufficient_memory:
+    #     raise ValueError("No cycles found with sufficient memory")
+    logger.warning("Bypassing memory check as requested by user.")
+    cycles_with_sufficient_memory = candidate_cycles
 
     smallest_cycles = get_smallest_cycles(cycles_with_sufficient_memory)
 
